@@ -3,6 +3,17 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
+      options: {
+        separator: ';',
+      },
+      dist: {
+        src: ['public/client/*.js'],
+        dest: 'public/dist/scripts.js',
+      },
+      vendor: {
+        src: ['public/lib/*.js'],
+        dest: 'public/dist/vendor.js',
+      },
     },
 
     mochaTest: {
@@ -21,15 +32,26 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+      dist: {
+        files: {
+          'public/dist/scripts.min.js': ['public/dist/scripts.js'],
+          'public/dist/vendor.min.js': ['public/dist/vendor.js'],
+        },
+      },
     },
 
     eslint: {
       target: [
-        // Add list of files to lint here
+        'app/**/*.js', 'server.js', 'server-config.js', 'lib/*.js', 'public/client/*.js'
       ]
     },
 
     cssmin: {
+      dist: {
+        files: {
+          'public/dist/style.min.css': ['public/style.css'],
+        },
+      },
     },
 
     watch: {
@@ -51,6 +73,7 @@ module.exports = function(grunt) {
 
     shell: {
       prodServer: {
+        command: 'git push live master'
       }
     },
   });
@@ -77,19 +100,40 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', [
+    'eslint',
+    'mochaTest',
+    'concat',
+    'uglify',
+    'cssmin'
   ]);
 
   grunt.registerTask('upload', function(n) {
     if (grunt.option('prod')) {
-      // add your production server task here
+      grunt.task.run(['shell:prodServer']);
     } else {
       grunt.task.run([ 'server-dev' ]);
     }
   });
 
-  grunt.registerTask('deploy', [
-    // add your deploy tasks here
-  ]);
-
-
+  grunt.registerTask('deploy', function(n) {
+    if (grunt.option('prod')) {
+      grunt.task.run([
+        'eslint',
+        'mochaTest',
+        'concat',
+        'uglify',
+        'cssmin',
+        'shell:prodServer'
+      ]);
+    } else {
+      grunt.task.run([
+        'eslint',
+        'mochaTest',
+        'concat',
+        'uglify',
+        'cssmin',
+        'server-dev'
+      ]);
+    }
+  });
 };
