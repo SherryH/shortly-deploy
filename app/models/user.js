@@ -17,6 +17,18 @@ User.comparePassword = function(attemptedPassword, savedPassword, cb) {
   });
 };
 
+User.comparePasswordAsync = function(attemptedPassword, savedPassword) {
+  return new Promise(function(resolve, reject) {
+    bcrypt.compare(attemptedPassword, savedPassword, function(err, isMatch) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(isMatch);
+      }
+    });
+  });
+};
+
 
 userSchema.pre('save', function(next) {
   var cipher = Promise.promisify(bcrypt.hash);
