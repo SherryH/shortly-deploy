@@ -7,8 +7,8 @@ module.exports = function(grunt) {
         separator: ';',
       },
       dist: {
-        src: ['public/client/*.js'],
-        dest: 'public/dist/scripts.js',
+        src: ['public/client/**/*.js'],
+        dest: 'public/dist/<%= pkg.name %>.js',
       },
       vendor: {
         src: ['public/lib/*.js'],
@@ -32,9 +32,13 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+
+      options: {
+        banner: '/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
+      },
       dist: {
         files: {
-          'public/dist/scripts.min.js': ['public/dist/scripts.js'],
+          'public/dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>'],
           'public/dist/vendor.min.js': ['public/dist/vendor.js'],
         },
       },
@@ -42,11 +46,19 @@ module.exports = function(grunt) {
 
     eslint: {
       target: [
-        'app/**/*.js', 'server.js', 'server-config.js', 'lib/*.js', 'public/client/*.js'
+        'Gruntfile.js',
+        'app/**/*.js',
+        'lib/**/*.js',
+        'public/**/*.js',
+        './*.js',
+        'spec/**/*.js'
       ]
     },
 
     cssmin: {
+      options: {
+        keepSpecialComments: 0
+      },
       dist: {
         files: {
           'public/dist/style.min.css': ['public/style.css'],
@@ -73,7 +85,12 @@ module.exports = function(grunt) {
 
     shell: {
       prodServer: {
-        command: 'git push live master'
+        command: 'git push live master',
+        options: {
+          stdout: true,
+          stderr: true,
+          failOnError: true
+        }
       }
     },
   });
@@ -96,12 +113,11 @@ module.exports = function(grunt) {
   ////////////////////////////////////////////////////
 
   grunt.registerTask('test', [
+    'eslint',
     'mochaTest'
   ]);
 
   grunt.registerTask('build', [
-    'eslint',
-    'mochaTest',
     'concat',
     'uglify',
     'cssmin'
@@ -115,25 +131,9 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('deploy', function(n) {
-    if (grunt.option('prod')) {
-      grunt.task.run([
-        'eslint',
-        'mochaTest',
-        'concat',
-        'uglify',
-        'cssmin',
-        'shell:prodServer'
-      ]);
-    } else {
-      grunt.task.run([
-        'eslint',
-        'mochaTest',
-        'concat',
-        'uglify',
-        'cssmin',
-        'server-dev'
-      ]);
-    }
-  });
+  grunt.registerTask('deploy', [
+    'test',
+    'build',
+    'upload'
+  ]);
 };
