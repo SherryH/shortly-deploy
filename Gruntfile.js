@@ -10,10 +10,10 @@ module.exports = function(grunt) {
         src: ['public/client/**/*.js'],
         dest: 'public/dist/<%= pkg.name %>.js',
       },
-      vendor: {
-        src: ['public/lib/*.js'],
-        dest: 'public/dist/vendor.js',
-      },
+      // vendor: {
+      //   src: ['public/lib/*.js'],
+      //   dest: 'public/dist/vendor.js',
+      // },
     },
 
     mochaTest: {
@@ -39,7 +39,7 @@ module.exports = function(grunt) {
       dist: {
         files: {
           'public/dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>'],
-          'public/dist/vendor.min.js': ['public/dist/vendor.js'],
+          // 'public/dist/vendor.min.js': ['public/dist/vendor.js'],
         },
       },
     },
